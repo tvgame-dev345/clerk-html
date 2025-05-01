@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clerk Login</title>
+
+  <script src="env.js"></script>
+
+  <script>
+    window.addEventListener("load", () => {
+      const waitForEnv = setInterval(() => {
+        if (window.CLERK_ENV) {
+          clearInterval(waitForEnv);
+
+          const script = document.createElement("script");
+          script.async = true;
+          script.crossOrigin = "anonymous";
+          script.setAttribute("data-clerk-publishable-key", window.CLERK_ENV.PUBLISHABLE_KEY);
+          script.src = window.CLERK_ENV.SCRIPT_SRC;
+          script.type = "text/javascript";
+
+          script.onload = async () => {
+            await window.Clerk.load();
+
+            const user = window.Clerk.user;
+            if (user) {
+              document.getElementById("auth-container").style.display = "none";
+              window.Clerk.mountUserButton(document.getElementById("user-button"));
+            } else {
+              window.Clerk.mountSignIn(document.getElementById("auth-container"));
+            }
+
+            window.Clerk.addListener(({ user }) => {
+              if (user) {
+                document.getElementById("auth-container").style.display = "none";
+                window.Clerk.mountUserButton(document.getElementById("user-button"));
+              }
+            });
+          };
+
+          document.head.appendChild(script);
+        }
+      }, 100);
+    });
+  </script>
+
+  <style>
+    #auth-container, #user-button {
+      margin: 40px auto;
+      width: 300px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="auth-container"></div>
+  <div id="user-button"></div>
+</body>
+</html>
